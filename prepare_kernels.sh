@@ -44,14 +44,20 @@ for kernel in $kernels; do
 	[ ! "x$kernel_version" == "x" ] || { echo "Kernel version not found"; exit 1; }
 	case "$kernel" in
 		6.12|6.6|6.1)
-			echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version from https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz"
-			curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			mkdir "./kernels/chromebook-$kernel" "./kernels/$kernel"
-			tar -C "./kernels/chromebook-$kernel" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel $kernel source extraction failed"; exit 1; }
+			if [ -f "./chromiumos-$kernel.tar.gz" ];then
+				echo "Use Cached ChromiumOS kernel source for kernel $kernel version $kernel_version from https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz"
+				cp "./chromiumos-$kernel.tar.gz" "./kernels/chromiumos-$kernel.tar.gz"
+			else
+				echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version from https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz"
+				curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
+			fi
+			# mkdir "./kernels/chromebook-$kernel"
+# 			tar -C "./kernels/chromebook-$kernel" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel $kernel source extraction failed"; exit 1; }
+			mkdir "./kernels/$kernel"
 			tar -C "./kernels/$kernel" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel $kernel source extraction failed"; exit 1; }
 			rm -f "./kernels/chromiumos-$kernel.tar.gz"
-			apply_patches "chromebook-$kernel"
-			make_config "chromebook-$kernel" "chromebook"
+# 			apply_patches "chromebook-$kernel"
+# 			make_config "chromebook-$kernel" "chromebook"
 			apply_patches "$kernel"
 			make_config "$kernel" "generic"
 		;;
@@ -72,6 +78,6 @@ rm -rf ./kernels
 mkdir ./kernels
 
 chromeos_version="R136"
-kernels="5.4 5.10 5.15 6.1 6.6 6.12"
+kernels="6.12"
 download_and_patch_kernels
 
