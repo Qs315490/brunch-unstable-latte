@@ -2,7 +2,7 @@
 
 apply_patches()
 {
-for patch_type in "base" "others" "chromeos" "all_devices" "surface_devices" "surface_go_devices" "surface_mwifiex_pcie_devices" "surface_np3_devices" "macbook"; do
+for patch_type in "base" "others" "chromeos" "all_devices"; do
 	if [ -d "./kernel-patches/$1/$patch_type" ]; then
 		for patch in ./kernel-patches/"$1/$patch_type"/*.patch; do
 			echo "Applying patch: $patch"
@@ -42,35 +42,19 @@ for kernel in $kernels; do
 	kernel_version=$(curl -Ls "https://chromium.googlesource.com/chromiumos/third_party/kernel/+/$kernel_remote_path$kernel/Makefile?format=TEXT" | base64 --decode | sed -n -e 1,4p | sed -e '/^#/d' | cut -d'=' -f 2 | sed -z 's#\n##g' | sed 's#^ *##g' | sed 's# #.#g')
 	echo "kernel_version=$kernel_version"
 	[ ! "x$kernel_version" == "x" ] || { echo "Kernel version not found"; exit 1; }
-	case "$kernel" in
-		6.12|6.6|6.1)
-			if [ -f "./chromiumos-$kernel.tar.gz" ];then
-				echo "Use Cached ChromiumOS kernel source for kernel $kernel version $kernel_version from https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz"
-				cp "./chromiumos-$kernel.tar.gz" "./kernels/chromiumos-$kernel.tar.gz"
-			else
-				echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version from https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz"
-				curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			fi
-			# mkdir "./kernels/chromebook-$kernel"
-# 			tar -C "./kernels/chromebook-$kernel" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel $kernel source extraction failed"; exit 1; }
-			mkdir "./kernels/$kernel"
-			tar -C "./kernels/$kernel" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel $kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/chromiumos-$kernel.tar.gz"
-# 			apply_patches "chromebook-$kernel"
-# 			make_config "chromebook-$kernel" "chromebook"
-			apply_patches "$kernel"
-			make_config "$kernel" "generic"
-		;;
-		*)
-			echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version from https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz"
-			curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
-			mkdir "./kernels/chromebook-$kernel"
-			tar -C "./kernels/chromebook-$kernel" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel $kernel source extraction failed"; exit 1; }
-			rm -f "./kernels/chromiumos-$kernel.tar.gz"
-			apply_patches "chromebook-$kernel"
-			make_config "chromebook-$kernel" "chromebook"
-		;;
-	esac
+
+	if [ -f "./chromiumos-$kernel.tar.gz" ];then
+		echo "Use Cached ChromiumOS kernel source for kernel $kernel version $kernel_version from https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz"
+		cp "./chromiumos-$kernel.tar.gz" "./kernels/chromiumos-$kernel.tar.gz"
+	else
+		echo "Downloading ChromiumOS kernel source for kernel $kernel version $kernel_version from https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz"
+		curl -L "https://chromium.googlesource.com/chromiumos/third_party/kernel/+archive/$kernel_remote_path$kernel.tar.gz" -o "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel source download failed"; exit 1; }
+	fi
+	mkdir "./kernels/$kernel"
+	tar -C "./kernels/$kernel" -zxf "./kernels/chromiumos-$kernel.tar.gz" || { echo "Kernel $kernel source extraction failed"; exit 1; }
+	rm -f "./kernels/chromiumos-$kernel.tar.gz"
+	apply_patches "$kernel"
+	make_config "$kernel" "generic"
 done
 }
 
