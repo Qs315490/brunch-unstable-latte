@@ -1,4 +1,5 @@
 kernels/
-chroot/
+out/
 release-*
-*.tar.gz
+kernel*.tar.gz
+chromiumos-*.tar.gz
