@@ -2,7 +2,7 @@
 
 apply_patches()
 {
-for patch_type in "base" "others" "chromeos" "all_devices" "mipad2"; do
+for patch_type in "base" "others" "chromeos" "all_devices" "fydeos" "mipad2"; do
 	if [ -d "./kernel-patches/$1/$patch_type" ]; then
 		for patch in ./kernel-patches/"$1/$patch_type"/*.patch; do
 			echo "Applying patch: $patch"
