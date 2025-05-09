@@ -1502,8 +1502,8 @@ index 000000000000..75eeac385c43
 +{
 +	dest->i_mode = src->i_mode & S_IFMT;
 +	dest->i_rdev = src->i_rdev;
-+	dest->i_atime = src->i_atime;
-+	dest->i_mtime = src->i_mtime;
++	inode_set_atime_to_ts(dest, inode_get_atime(src));
++	inode_set_mtime_to_ts(dest, inode_get_mtime(src));
 +	inode_set_ctime_to_ts(dest, inode_get_ctime(src));
 +	dest->i_blkbits = src->i_blkbits;
 +	dest->i_flags = src->i_flags;
@@ -2673,7 +2673,7 @@ new file mode 100644
 index 000000000000..b3df59340469
 --- /dev/null
 +++ b/fs/esdfs/lookup.c
-@@ -0,0 +1,474 @@
+@@ -0,0 +1,472 @@
 +/*
 + * Copyright (c) 1998-2014 Erez Zadok
 + * Copyright (c) 2009	   Shrikar Archak
@@ -2879,10 +2879,8 @@ index 000000000000..b3df59340469
 +
 +	inode->i_mapping->a_ops = &esdfs_aops;
 +
-+	inode->i_atime.tv_sec = 0;
-+	inode->i_atime.tv_nsec = 0;
-+	inode->i_mtime.tv_sec = 0;
-+	inode->i_mtime.tv_nsec = 0;
++	inode_set_atime_to_ts(inode, time);
++	inode_set_mtime_to_ts(inode, time);
 +	inode_set_ctime_to_ts(inode, time);
 +
 +	/* properly initialize special inodes */
